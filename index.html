@@ -1,0 +1,1542 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Media Pembelajaran Pancasila - Fase A SD</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <style>
+        :root {
+            --primary-red: #d90429;
+            --primary-gold: #ffb703;
+            --bg-soft: #f0f4f8;
+            --card-shadow: 0 8px 20px rgba(0,0,0,0.08);
+        }
+        body {
+            font-family: 'Comic Sans MS', 'Fredoka', 'Chalkboard SE', sans-serif, Arial;
+            background-color: var(--bg-soft);
+            color: #2b2d42;
+        }
+        .app-header {
+            background: linear-gradient(135deg, #d90429, #ef233c);
+            color: white;
+            border-radius: 0 0 25px 25px;
+            padding: 25px 0;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        .card-menu {
+            border: none;
+            border-radius: 20px;
+            box-shadow: var(--card-shadow);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            background: #ffffff;
+            overflow: hidden;
+        }
+        .card-menu:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 12px 25px rgba(0,0,0,0.15);
+        }
+        .icon-box {
+            font-size: 3rem;
+            margin-bottom: 10px;
+        }
+        .btn-custom {
+            border-radius: 12px;
+            font-weight: bold;
+            padding: 10px 20px;
+            transition: all 0.2s;
+        }
+        .btn-red {
+            background-color: var(--primary-red);
+            color: white;
+        }
+        .btn-red:hover {
+            background-color: #b1001c;
+            color: white;
+        }
+        .btn-gold {
+            background-color: var(--primary-gold);
+            color: #000;
+        }
+        .btn-gold:hover {
+            background-color: #e0a000;
+            color: #000;
+        }
+        .flashcard {
+            perspective: 1000px;
+            height: 220px;
+            cursor: pointer;
+        }
+        .flashcard-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            text-align: center;
+            transition: transform 0.6s;
+            transform-style: preserve-3d;
+            box-shadow: var(--card-shadow);
+            border-radius: 15px;
+        }
+        .flashcard.flipped .flashcard-inner {
+            transform: rotateY(180deg);
+        }
+        .flashcard-front, .flashcard-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            -webkit-backface-visibility: hidden;
+            backface-visibility: hidden;
+            border-radius: 15px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 15px;
+        }
+        .flashcard-front {
+            background-color: #ffffff;
+            border: 3px solid var(--primary-gold);
+        }
+        .flashcard-back {
+            background-color: #fff3cd;
+            color: #856404;
+            transform: rotateY(180deg);
+            border: 3px solid #ffeeba;
+        }
+        .draggable-item {
+            cursor: grab;
+            user-select: none;
+            touch-action: none;
+        }
+        .drop-zone {
+            min-height: 80px;
+            border: 2px dashed #888;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #e9ecef;
+            transition: background 0.3s;
+        }
+        .drop-zone.hovered {
+            background-color: #d1e7dd;
+            border-color: #198754;
+        }
+        .popup-img-trigger {
+            color: #0d6efd;
+            text-decoration: underline;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .certificate-box {
+            border: 10px double var(--primary-gold);
+            padding: 30px;
+            background: #fffdf0;
+            border-radius: 15px;
+            position: relative;
+        }
+        .hidden-section {
+            display: none !important;
+        }
+        .badge-kelas {
+            font-size: 0.9rem;
+            padding: 6px 12px;
+            border-radius: 20px;
+        }
+        .svg-symbol {
+            width: 120px;
+            height: 120px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header & Navigasi Utama -->
+    <header class="app-header mb-4">
+        <div class="container text-center">
+            <h1 class="fw-bold mb-1">🇮🇩 Pancasila Seru!</h1>
+            <p class="mb-0">Media Pembelajaran Interaktif Pancasila - Fase A (Kelas 1 & 2 SD)</p>
+            <div id="userInfoDisplay" class="mt-2" style="display:none;">
+                <span class="badge bg-light text-dark badge-kelas" id="lblNamaSiswa">Siswa: -</span>
+                <span class="badge bg-warning text-dark badge-kelas" id="lblKelasSiswa">Kelas: -</span>
+                <button class="btn btn-sm btn-outline-light ms-2" onclick="logoutSession()"><i class="bi bi-box-arrow-right"></i> Keluar</button>
+            </div>
+        </div>
+    </header>
+
+    <main class="container mb-5">
+
+        <!-- SECTION LOGIN -->
+        <section id="sectionLogin" class="row justify-content-center">
+            <div class="col-md-6 col-lg-5">
+                <div class="card card-menu p-4">
+                    <div class="text-center mb-3">
+                        <span class="fs-1">🇮🇩</span>
+                        <h3 class="fw-bold text-danger">Selamat Datang!</h3>
+                        <p class="text-muted small">Media Pembelajaran Pancasila Fase A</p>
+                    </div>
+                    
+                    <ul class="nav nav-pills nav-justified mb-3" id="pills-tab" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active fw-bold" id="pills-siswa-tab" data-bs-toggle="pill" data-bs-target="#pills-siswa" type="button"><i class="bi bi-person-fill"></i> Siswa</button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link fw-bold" id="pills-guru-tab" data-bs-toggle="pill" data-bs-target="#pills-guru" type="button"><i class="bi bi-person-badge-fill"></i> Guru</button>
+                        </li>
+                    </ul>
+
+                    <div class="tab-content" id="pills-tabContent">
+                        <!-- Login Siswa -->
+                        <div class="tab-pane fade show active" id="pills-siswa">
+                            <form onsubmit="handleLoginSiswa(event)">
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold">Nama Lengkap Siswa</label>
+                                    <input type="text" id="inputNamaSiswa" class="form-control" placeholder="Tulis namamu di sini..." required>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold">Pilih Kelas / Peran</label>
+                                    <select id="selectKelasSiswa" class="form-select" required>
+                                        <option value="1">Kelas 1 SD/MI</option>
+                                        <option value="2">Kelas 2 SD/MI</option>
+                                        <option value="faseA">Ringkasan Umum Fase A</option>
+                                    </select>
+                                </div>
+                                <button type="submit" class="btn btn-red btn-custom w-100"><i class="bi bi-play-circle-fill"></i> Masuk Sekarang</button>
+                            </form>
+                        </div>
+
+                        <!-- Login Guru -->
+                        <div class="tab-pane fade" id="pills-guru">
+                            <form onsubmit="handleLoginGuru(event)">
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold">PIN / Password Guru</label>
+                                    <input type="password" id="inputPinGuru" class="form-control" placeholder="Masukkan PIN Guru (Default: guru123)" required>
+                                    <div class="form-text">PIN default: <code>guru123</code></div>
+                                </div>
+                                <button type="submit" class="btn btn-gold btn-custom w-100"><i class="bi bi-shield-lock-fill"></i> Masuk Dashboard Guru</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION MENU UTAMA -->
+        <section id="sectionMenuUtama" class="hidden-section">
+            <div class="text-center mb-4">
+                <h2 class="fw-bold text-dark">✨ Media Pembelajaran Pancasila</h2>
+                <p class="text-secondary">Halo, Teman Belajar! 👋 Pilih menu kegiatan di bawah untuk mulai belajar, bermain, dan menguji kemampuanmu!</p>
+            </div>
+            
+            <div class="row g-4">
+                <div class="col-md-4">
+                    <div class="card card-menu p-4 text-center h-100" onclick="showSection('sectionMateri')">
+                        <div class="icon-box text-danger">🦅 📖</div>
+                        <h4 class="fw-bold">Menu 1</h4>
+                        <h5 class="text-primary fw-bold">Materi Pembelajaran</h5>
+                        <p class="text-muted small">Materi terpisah otomatis untuk Kelas 1, Kelas 2, atau Ringkasan Fase A.</p>
+                        <button class="btn btn-red btn-custom mt-auto">Buka Materi <i class="bi bi-arrow-right-circle"></i></button>
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <div class="card card-menu p-4 text-center h-100" onclick="startLatihanSoal()">
+                        <div class="icon-box text-warning">✍️</div>
+                        <h4 class="fw-bold">Menu 2</h4>
+                        <h5 class="text-primary fw-bold">Latihan Soal</h5>
+                        <p class="text-muted small">Soal pilihan ganda interaktif dengan feedback & pembahasan langsung.</p>
+                        <button class="btn btn-gold btn-custom mt-auto">Mulai Latihan <i class="bi bi-arrow-right-circle"></i></button>
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <div class="card card-menu p-4 text-center h-100" onclick="startKuisEvaluasi()">
+                        <div class="icon-box text-success">📝</div>
+                        <h4 class="fw-bold">Menu 3</h4>
+                        <h5 class="text-primary fw-bold">Soal Evaluasi / Kuis</h5>
+                        <p class="text-muted small">Ujian akhir berdurasi dengan rekap nilai & sertifikat bintang kelulusan.</p>
+                        <button class="btn btn-success btn-custom mt-auto">Mulai Kuis <i class="bi bi-arrow-right-circle"></i></button>
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <div class="card card-menu p-4 text-center h-100" onclick="showSection('sectionGame')">
+                        <div class="icon-box text-info">🎮</div>
+                        <h4 class="fw-bold">Menu 4</h4>
+                        <h5 class="text-primary fw-bold">Game Pasang Simbol</h5>
+                        <p class="text-muted small">Tarik dan pasangkan lambang Pancasila ke bunyi Sila yang pas!</p>
+                        <button class="btn btn-info text-white btn-custom mt-auto">Main Game <i class="bi bi-controller"></i></button>
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <div class="card card-menu p-4 text-center h-100" onclick="showRiwayatSkor()">
+                        <div class="icon-box text-purple">📊</div>
+                        <h4 class="fw-bold">Menu 5</h4>
+                        <h5 class="text-primary fw-bold">Riwayat Skor Siswa</h5>
+                        <p class="text-muted small">Lihat rekap nilai kuis dan latihan yang sudah kamu selesaikan.</p>
+                        <button class="btn btn-secondary btn-custom mt-auto">Lihat Riwayat <i class="bi bi-journal-check"></i></button>
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <div class="card card-menu p-4 text-center h-100" onclick="checkGuruAuthDashboard()">
+                        <div class="icon-box text-dark">👨‍🏫</div>
+                        <h4 class="fw-bold">Menu 6</h4>
+                        <h5 class="text-primary fw-bold">Dashboard Guru</h5>
+                        <p class="text-muted small">Rekap nilai seluruh siswa, statistik kelas, & cetak laporan.</p>
+                        <button class="btn btn-dark btn-custom mt-auto">Area Guru <i class="bi bi-shield-lock"></i></button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION MENU 1: MATERI PEMBELAJARAN -->
+        <section id="sectionMateri" class="hidden-section">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <button class="btn btn-outline-danger btn-custom" onclick="showSection('sectionMenuUtama')"><i class="bi bi-house-door-fill"></i> Kembali ke Menu Utama</button>
+                <h3 class="fw-bold text-danger m-0">📖 Learning Hub Pancasila</h3>
+            </div>
+
+            <div class="card p-4 shadow-sm mb-4">
+                <!-- TAB MATERI KELAS 1 -->
+                <div id="materiKelas1View" class="hidden-section">
+                    <div class="alert alert-success fw-bold"><i class="bi bi-person-check-fill"></i> Modul Khusus Kelas 1 SD/MI</div>
+                    <ul class="nav nav-tabs mb-3" id="tabKelas1" role="tablist">
+                        <li class="nav-item"><button class="nav-link active fw-bold" data-bs-toggle="tab" data-bs-target="#m1_modul1">🇮🇩 Modul 1: Identitas & Lambang Negara</button></li>
+                        <li class="nav-item"><button class="nav-link fw-bold" data-bs-toggle="tab" data-bs-target="#m1_modul2">⭐ Modul 2: Simbol & Sila Pancasila</button></li>
+                        <li class="nav-item"><button class="nav-link fw-bold" data-bs-toggle="tab" data-bs-target="#m1_flashcards">🃏 Kartu Flashcards</button></li>
+                    </ul>
+                    <div class="tab-content">
+                        <!-- Modul 1 Kelas 1 Step BY Step -->
+                        <div class="tab-pane fade show active" id="m1_modul1">
+                            <div class="p-3 bg-light rounded border">
+                                <span class="badge bg-success mb-2">🟢 KHUSUS KELAS I SD/MI</span>
+                                <p class="small text-muted">Fokus Pembelajaran: Mengenal bentuk dasar visual, nama lambang negara, serta pembiasaan sikap tertib saat penghormatan.</p>
+
+                                <!-- MATERI 1 KELAS 1 -->
+                                <div id="k1_m1_step1" class="k1_step_item">
+                                    <h4 class="fw-bold text-danger mb-3">🦅 1. Mengenal Burung Garuda Pancasila</h4>
+                                    <div class="p-3 bg-white border rounded mb-3">
+                                        <p class="fw-bold fs-5 text-dark mb-1">Apa itu Garuda Pancasila?</p>
+                                        <p class="fs-6 text-secondary">Garuda Pancasila adalah lambang negara Indonesia.</p>
+                                    </div>
+                                    <div class="text-center my-3 p-3 bg-white border rounded">
+                                        <!-- SVG Visual Garuda -->
+                                        <svg class="svg-symbol" viewBox="0 0 100 100">
+                                            <circle cx="50" cy="50" r="45" fill="#ffb703"/>
+                                            <path d="M50 15 L60 35 L80 35 L65 48 L70 70 L50 55 L30 70 L35 48 L20 35 L40 35 Z" fill="#d90429"/>
+                                            <rect x="35" y="40" width="30" height="30" fill="#ffffff" stroke="#000" stroke-width="2"/>
+                                            <text x="50" y="58" font-size="18" text-anchor="middle" fill="#000">🇮🇩</text>
+                                        </svg>
+                                        <p class="small text-muted mt-2 fw-bold mb-0">GAMBAR BURUNG GARUDA PANCASILA</p>
+                                    </div>
+                                    <div class="p-3 bg-white border rounded">
+                                        <p class="fw-bold fs-5 text-dark">Ciri-Ciri Garuda Pancasila:</p>
+                                        <ul>
+                                            <li>Berbentuk burung Garuda gagah berwarna kuning keemasan.</li>
+                                            <li>Di dadanya ada perisai yang berisi 5 gambar simbol Sila Pancasila (Bintang, Rantai, Pohon Beringin, Kepala Banteng, Padi & Kapas).</li>
+                                            <li>Kakinya mencengkeram pita putih bertuliskan <em>Bhinneka Tunggal Ika</em>.</li>
+                                        </ul>
+                                    </div>
+                                    <div class="mt-3">
+                                        <button class="btn btn-red btn-custom float-end" onclick="nextStepK1(1, 2)">Selanjutnya <i class="bi bi-arrow-right"></i></button>
+                                        <div class="clearfix"></div>
+                                    </div>
+                                </div>
+
+                                <!-- MATERI 2 KELAS 1 -->
+                                <div id="k1_m1_step2" class="k1_step_item hidden-section">
+                                    <h4 class="fw-bold text-danger mb-3">🚩 2. Bendera Negara: Sang Merah Putih</h4>
+                                    <div class="text-center my-3 p-3 bg-white border rounded">
+                                        <div class="d-inline-block border text-center shadow-sm" style="width:180px; height:110px; border-radius:8px; overflow:hidden;">
+                                            <div style="background-color:#d90429; height:50%; text-align:center; color:white; font-weight:bold; line-height:55px; font-size:1.1rem;">MERAH</div>
+                                            <div style="background-color:white; height:50%; text-align:center; color:black; font-weight:bold; line-height:55px; font-size:1.1rem;">PUTIH</div>
+                                        </div>
+                                    </div>
+                                    <div class="p-3 bg-white border rounded mb-3">
+                                        <p class="fw-bold fs-5 text-dark mb-2">Warna Bendera:</p>
+                                        <ul class="list-unstyled mb-0">
+                                            <li class="mb-2">🔴 <strong>Merah</strong> di bagian atas, artinya <strong>Berani</strong>.</li>
+                                            <li>⚪ <strong>Putih</strong> di bagian bawah, artinya <strong>Suci</strong>.</li>
+                                        </ul>
+                                    </div>
+                                    <div class="p-3 bg-white border rounded">
+                                        <p class="fw-bold fs-5 text-dark">Sikap Saat Upacara Bendera:</p>
+                                        <ul>
+                                            <li>Berdiri tegak, tidak bercanda/mengobrol.</li>
+                                            <li>Menatap bendera dengan khidmat.</li>
+                                            <li>Mengangkat tangan kanan memberi sikap hormat saat lagu Indonesia Raya berkumandang.</li>
+                                        </ul>
+                                    </div>
+                                    <div class="d-flex justify-content-between mt-3">
+                                        <button class="btn btn-secondary btn-custom" onclick="nextStepK1(2, 1)"><i class="bi bi-arrow-left"></i> Sebelumnya</button>
+                                        <button class="btn btn-red btn-custom" onclick="nextStepK1(2, 3)">Selanjutnya <i class="bi bi-arrow-right"></i></button>
+                                    </div>
+                                </div>
+
+                                <!-- MATERI 3 KELAS 1 -->
+                                <div id="k1_m1_step3" class="k1_step_item hidden-section">
+                                    <h4 class="fw-bold text-danger mb-3">🎵 3. Lagu Kebangsaan: Indonesia Raya</h4>
+                                    <div class="p-3 bg-white border rounded mb-3">
+                                        <p class="fw-bold fs-5 text-dark mb-1">Pencipta Lagu:</p>
+                                        <p class="fs-6 text-secondary mb-0">W.R. Supratman</p>
+                                    </div>
+                                    <div class="text-center my-3 p-3 bg-white border rounded">
+                                        <span class="fs-1">🚶‍♂️🫡</span>
+                                        <p class="small text-muted fw-bold mb-0">Contoh Sikap Sempurna Saat Menyanyi & Hormat Bendera</p>
+                                    </div>
+                                    <div class="p-3 bg-white border rounded">
+                                        <p class="fw-bold fs-5 text-dark">Aturan Saat Menyanyikan:</p>
+                                        <ul>
+                                            <li>Dinyanyikan bersama saat Upacara Bendera setiap hari Senin.</li>
+                                            <li>Menyanyi dengan suara jelas, berdiri tegak, dan tertib.</li>
+                                        </ul>
+                                    </div>
+                                    <div class="d-flex justify-content-between mt-3">
+                                        <button class="btn btn-secondary btn-custom" onclick="nextStepK1(3, 2)"><i class="bi bi-arrow-left"></i> Sebelumnya</button>
+                                        <button class="btn btn-success btn-custom" onclick="playSoundEffect('fanfare'); alert('Selamat! Kamu telah menyelesaikan Modul 1 Kelas 1!');"><i class="bi bi-check-circle-fill"></i> Selesai Modul 1</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Modul 2 Kelas 1 -->
+                        <div class="tab-pane fade" id="m1_modul2">
+                            <div id="k1_sila_container"></div>
+                        </div>
+
+                        <!-- Flashcards Kelas 1 -->
+                        <div class="tab-pane fade" id="m1_flashcards">
+                            <div class="row g-3" id="flashcardContainer"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TAB MATERI KELAS 2 -->
+                <div id="materiKelas2View" class="hidden-section">
+                    <div class="alert alert-primary fw-bold"><i class="bi bi-person-check-fill"></i> Modul Khusus Kelas 2 SD/MI</div>
+                    <ul class="nav nav-tabs mb-3" id="tabKelas2" role="tablist">
+                        <li class="nav-item"><button class="nav-link active fw-bold" data-bs-toggle="tab" data-bs-target="#m2_modul1">🇮🇩 Modul 1: Struktur & Aturan Lambang</button></li>
+                        <li class="nav-item"><button class="nav-link fw-bold" data-bs-toggle="tab" data-bs-target="#m2_modul2">⭐ Modul 2: Makna & Pengamalan Sila</button></li>
+                    </ul>
+                    <div class="tab-content">
+                        <!-- Modul 1 Kelas 2 Step by Step -->
+                        <div class="tab-pane fade show active" id="m2_modul1">
+                            <div class="p-3 bg-light rounded border">
+                                <span class="badge bg-primary mb-2">🔵 KHUSUS KELAS II SD/MI</span>
+                                <p class="small text-muted">Fokus Pembelajaran: Memahami makna simbolis, aturan penggunaan simbol negara, serta lirik lagu kebangsaan secara lengkap.</p>
+
+                                <div id="k2_m1_step1" class="k2_step_item">
+                                    <h4 class="fw-bold text-primary">🏛️ 1. Memahami Struktur Garuda Pancasila & Semboyan Bangsa</h4>
+                                    <p><strong>Makna Perisai:</strong><br>Perisai di dada Burung Garuda melambangkan perjuangan dan perlindungan diri bangsa Indonesia.</p>
+                                    <div class="text-center my-3">
+                                        <div class="p-2 bg-white border d-inline-block rounded fw-bold text-success">
+                                            📜 PITA TULISAN "Bhinneka Tunggal Ika"
+                                        </div>
+                                    </div>
+                                    <p><strong>Makna Semboyan Bhinneka Tunggal Ika:</strong></p>
+                                    <ul>
+                                        <li>Berasal dari bahasa Jawa Kuno.</li>
+                                        <li>Artinya: <em>"Berbeda-beda tetapi tetap satu jua"</em>.</li>
+                                        <li>Maknanya: Walaupun murid-murid berbeda suku, agama, atau warna kulit, kita semua tetap satu bangsa Indonesia.</li>
+                                    </ul>
+                                    <button class="btn btn-primary btn-custom float-end" onclick="nextStepK2(1, 2)">Selanjutnya <i class="bi bi-arrow-right"></i></button>
+                                    <div class="clearfix"></div>
+                                </div>
+
+                                <div id="k2_m1_step2" class="k2_step_item hidden-section">
+                                    <h4 class="fw-bold text-primary">🇮🇩 2. Aturan Penggunaan Bendera Sang Merah Putih</h4>
+                                    <p><strong>Tempat Pengibaran:</strong><br>Dikibarkan di halaman sekolah, kantor pemerintahan, dan rumah-rumah saat Hari Kemerdekaan (17 Agustus 1945).</p>
+                                    <div class="text-center my-3">
+                                        <div class="p-3 bg-white border rounded d-inline-block">
+                                            <span class="fs-1">🚩🏫🏠</span>
+                                            <p class="small text-muted mb-0">Contoh Pengibaran Bendera yang Benar</p>
+                                        </div>
+                                    </div>
+                                    <p><strong>Aturan Penting:</strong></p>
+                                    <ul>
+                                        <li>Bendera tidak boleh menyentuh tanah.</li>
+                                        <li>Tidak boleh robek, kotor, atau kusam.</li>
+                                    </ul>
+                                    <div class="d-flex justify-content-between">
+                                        <button class="btn btn-secondary btn-custom" onclick="nextStepK2(2, 1)"><i class="bi bi-arrow-left"></i> Sebelumnya</button>
+                                        <button class="btn btn-primary btn-custom" onclick="nextStepK2(2, 3)">Selanjutnya <i class="bi bi-arrow-right"></i></button>
+                                    </div>
+                                </div>
+
+                                <div id="k2_m1_step3" class="k2_step_item hidden-section">
+                                    <h4 class="fw-bold text-primary">🎶 3. Lirik Lengkap Lagu Kebangsaan Indonesia Raya</h4>
+                                    <div class="my-3 text-center">
+                                        <a href="https://youtu.be/G8mGEkA1K0M?si=hly18zDLkL3gjXqi" target="_blank" class="btn btn-danger btn-custom"><i class="bi bi-youtube"></i> Tonton Video Lagu (YouTube)</a>
+                                    </div>
+                                    <p class="small text-muted text-center">(Lirik wajib dihapalkan dan dihayati oleh murid Kelas II)</p>
+                                    <div class="bg-white p-3 rounded border text-center mb-3 fs-6">
+                                        <p class="fw-bold">Bait Utama:</p>
+                                        <p>Indonesia tanah airku, Tanah tumpah darahku,<br>
+                                        Di sanalah aku berdiri, Jadi pandu ibuku.<br>
+                                        Indonesia kebangsaanku, Bangsa dan tanah airku,<br>
+                                        Marilah kita berseru, Indonesia bersatu.<br>
+                                        Hiduplah tanahku, hiduplah negriku,<br>
+                                        Bangsaku, Rakyatku, semuanya,<br>
+                                        Bangunlah jiwanya, bangunlah badannya,<br>
+                                        Untuk Indonesia Raya.</p>
+                                        <hr>
+                                        <p class="fw-bold text-danger">Reffrain (Ulangan):</p>
+                                        <p>Indonesia Raya, merdeka, merdeka,<br>
+                                        Tanahku, negriku yang kucinta!<br>
+                                        Indonesia Raya, merdeka, merdeka,<br>
+                                        Hiduplah Indonesia Raya!</p>
+                                    </div>
+                                    <button class="btn btn-secondary btn-custom" onclick="nextStepK2(3, 2)"><i class="bi bi-arrow-left"></i> Sebelumnya</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Modul 2 Kelas 2 -->
+                        <div class="tab-pane fade" id="m2_modul2">
+                            <div id="k2_sila_container"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TAB RINGKASAN FASE A -->
+                <div id="materiFaseAView" class="hidden-section">
+                    <div class="alert alert-warning fw-bold"><i class="bi bi-star-fill"></i> Ringkasan Umum Materi Pancasila - Fase A</div>
+                    
+                    <div id="ringkasanStep1" class="ringkasan_step">
+                        <h4 class="fw-bold text-success">🟢 RINGKASAN KELAS 1</h4>
+                        <p><strong>Simbol & Sila Pancasila:</strong></p>
+                        <ul>
+                            <li onclick="showModalSikap('Sila 1 (Kelas 1)', 'Berdoa sebelum/sesudah makan, berdoa tidur, beribadah bersama.')" class="popup-img-trigger">Sila 1: ⭐ Bintang Emas (Ketuhanan Yang Maha Esa)</li>
+                            <li onclick="showModalSikap('Sila 2 (Kelas 1)', 'Membantu adik merapikan mainan, kata &quot;tolong&quot; &amp; &quot;terima kasih&quot;, sayang hewan.')" class="popup-img-trigger">Sila 2: 🔗 Rantai Emas (Kemanusiaan yang adil dan beradab)</li>
+                            <li onclick="showModalSikap('Sila 3 (Kelas 1)', 'Rukun berbagi mainan, bantu Ibu rapikan tempat tidur, tidak bertengkar.')" class="popup-img-trigger">Sila 3: 🌳 Pohon Beringin (Persatuan Indonesia)</li>
+                            <li onclick="showModalSikap('Sila 4 (Kelas 1)', 'Penurut nasihat orang tua, patuh jadwal belajar, izin sebelum pinjam.')" class="popup-img-trigger">Sila 4: 🐂 Kepala Banteng (Kerakyatan yang dipimpin oleh hikmat...)</li>
+                            <li onclick="showModalSikap('Sila 5 (Kelas 1)', 'Membagi makanan adil, tidak membuang makanan, kembalikan barang ke tempatnya.')" class="popup-img-trigger">Sila 5: 🌾 Padi dan Kapas (Keadilan sosial bagi seluruh rakyat...)</li>
+                        </ul>
+                        <button class="btn btn-warning btn-custom float-end" onclick="nextRingkasan(1, 2)">Selanjutnya (Ringkasan Kelas 2) <i class="bi bi-arrow-right"></i></button>
+                        <div class="clearfix"></div>
+                    </div>
+
+                    <div id="ringkasanStep2" class="ringkasan_step hidden-section">
+                        <h4 class="fw-bold text-primary">🔵 RINGKASAN KELAS 2</h4>
+                        <p><strong>Makna Filosofis Simbol:</strong></p>
+                        <ul>
+                            <li onclick="showModalSikap('Makna Bintang', 'Cahaya bimbingan/petunjuk dari Tuhan.')" class="popup-img-trigger">⭐ Bintang: Cahaya bimbingan/petunjuk dari Tuhan.</li>
+                            <li onclick="showModalSikap('Makna Rantai', 'Bersambung melambangkan persatuan &amp; saling membantu.')" class="popup-img-trigger">🔗 Rantai: Bersambung melambangkan persatuan & saling membantu.</li>
+                            <li onclick="showModalSikap('Makna Pohon Beringin', 'Tempat berteduh &amp; perlindungan rakyat.')" class="popup-img-trigger">🌳 Pohon Beringin: Tempat berteduh & perlindungan rakyat.</li>
+                            <li onclick="showModalSikap('Makna Kepala Banteng', 'Hewan berkumpul, melambangkan musyawarah.')" class="popup-img-trigger">🐂 Kepala Banteng: Hewan berkumpul, melambangkan musyawarah.</li>
+                            <li onclick="showModalSikap('Makna Padi & Kapas', 'Pangan &amp; sandang sebagai kebutuhan pokok adil.')" class="popup-img-trigger">🌾 Padi & Kapas: Pangan & sandang sebagai kebutuhan pokok adil.</li>
+                        </ul>
+                        <button class="btn btn-secondary btn-custom" onclick="nextRingkasan(2, 1)"><i class="bi bi-arrow-left"></i> Sebelumnya</button>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- SECTION MENU 2: LATIHAN SOAL -->
+        <section id="sectionLatihan" class="hidden-section">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <button class="btn btn-outline-danger btn-custom" onclick="showSection('sectionMenuUtama')"><i class="bi bi-house-door-fill"></i> Keluar Latihan</button>
+                <h3 class="fw-bold text-warning m-0">✍️ Latihan Soal Interaktif (10 Soal)</h3>
+            </div>
+
+            <div class="card p-4 shadow-sm">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <span id="latihanProgress" class="badge bg-primary fs-6">Soal 1 dari 10</span>
+                    <span id="latihanScoreBadge" class="badge bg-success fs-6">Skor Sementara: 0</span>
+                </div>
+
+                <div id="latihanQuestionBox">
+                    <h5 id="latihanQuestionText" class="fw-bold mb-3">Pertanyaan Latihan...</h5>
+                    <div id="latihanOptionsContainer" class="d-grid gap-2 mb-3"></div>
+                </div>
+
+                <div id="latihanFeedbackBox" class="alert mt-3 hidden-section">
+                    <div id="latihanFeedbackTitle" class="fw-bold mb-1 fs-5"></div>
+                    <p id="latihanFeedbackDesc" class="mb-2"></p>
+                    <div class="bg-white p-2 rounded border small text-dark">
+                        <strong>Pembahasan Soal:</strong> <span id="latihanPembahasanText"></span>
+                    </div>
+                    <button id="btnNextLatihan" class="btn btn-warning btn-custom mt-3 float-end" onclick="nextLatihanSoal()">Lanjut Soal Berikutnya <i class="bi bi-arrow-right"></i></button>
+                    <div class="clearfix"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION MENU 3: SOAL EVALUASI / KUIS -->
+        <section id="sectionKuis" class="hidden-section">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <button class="btn btn-outline-danger btn-custom" onclick="exitKuis()"><i class="bi bi-door-open-fill"></i> Keluar Evaluasi</button>
+                <h3 class="fw-bold text-success m-0">📝 Kuis Evaluasi Pembelajaran (20 Soal)</h3>
+            </div>
+
+            <div class="card p-4 shadow-sm">
+                <div class="d-flex justify-content-between align-items-center mb-3 border-bottom pb-2">
+                    <span id="kuisProgress" class="badge bg-primary fs-6">Soal 1 dari 20</span>
+                    <span class="badge bg-danger fs-6"><i class="bi bi-clock-history"></i> Sisa Waktu: <span id="kuisTimer">10:00</span></span>
+                </div>
+
+                <div id="kuisQuestionBox">
+                    <h5 id="kuisQuestionText" class="fw-bold mb-3">Pertanyaan Ujian Evaluasi...</h5>
+                    <div id="kuisOptionsContainer" class="d-grid gap-2 mb-3"></div>
+                </div>
+
+                <div class="d-flex justify-content-end">
+                    <button id="btnSubmitKuisAns" class="btn btn-success btn-custom" onclick="submitKuisAnswer()" disabled>Jawab & Lanjut <i class="bi bi-arrow-right-circle"></i></button>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION HASIL KUIS / SERTIFIKAT -->
+        <section id="sectionHasilKuis" class="hidden-section">
+            <div class="card p-4 shadow-sm text-center">
+                <h2 class="fw-bold text-success mb-3">🏆 Hasil Evaluasi Pembelajaran</h2>
+                <p>Rekap nilai ujianmu telah dicatat otomatis!</p>
+
+                <div class="certificate-box my-4" id="certificateArea">
+                    <h2 class="fw-bold text-danger">SERTIFIKAT KELULUSAN</h2>
+                    <p class="text-muted mb-1">Diberikan kepada siswa hebat:</p>
+                    <h3 class="fw-bold text-primary text-uppercase my-2" id="certNamaSiswa">NAMA SISWA</h3>
+                    <p class="mb-1">Telah menyelesaikan Ujian Evaluasi <strong>Pancasila Fase A</strong></p>
+                    <div class="d-flex justify-content-center align-items-center gap-3 my-3">
+                        <div class="p-3 bg-white border rounded">
+                            <span class="small text-muted d-block">Nilai Akhir</span>
+                            <span class="fs-2 fw-bold text-success" id="certNilai">100</span>
+                        </div>
+                        <div class="p-3 bg-white border rounded">
+                            <span class="small text-muted d-block">Status Kelulusan</span>
+                            <span class="fs-4 fw-bold text-primary" id="certStatus">LULUS 🎉</span>
+                        </div>
+                    </div>
+                    <p id="certBintangDisplay" class="fs-2 mb-2">⭐⭐⭐⭐⭐</p>
+                    <p class="small text-muted">KKM Minimum: 70 Point | Media Pembelajaran Pancasila Interaktif</p>
+                </div>
+
+                <div class="d-flex justify-content-center gap-2">
+                    <button class="btn btn-primary btn-custom" onclick="downloadCertificate()"><i class="bi bi-download"></i> Unduh Sertifikat (PDF)</button>
+                    <button class="btn btn-warning btn-custom" onclick="startKuisEvaluasi()"><i class="bi bi-arrow-counterclockwise"></i> Ulangi Kuis</button>
+                    <button class="btn btn-secondary btn-custom" onclick="showSection('sectionMenuUtama')"><i class="bi bi-house-door"></i> Menu Utama</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION MENU 4: GAME PASANG SIMBOL -->
+        <section id="sectionGame" class="hidden-section">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <button class="btn btn-outline-danger btn-custom" onclick="showSection('sectionMenuUtama')"><i class="bi bi-house-door-fill"></i> Keluar Game</button>
+                <h3 class="fw-bold text-info m-0">🎮 Game Pasang Simbol Pancasila</h3>
+            </div>
+
+            <div class="card p-4 shadow-sm">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <div>
+                        <span class="fw-bold">Pilih Level Game:</span>
+                        <div class="btn-group ms-2">
+                            <button class="btn btn-sm btn-outline-primary active" id="btnLvl1" onclick="loadGameLevel(1)">Level 1 (Simbol - Nomor)</button>
+                            <button class="btn btn-sm btn-outline-primary" id="btnLvl2" onclick="loadGameLevel(2)">Level 2 (Sikap Rumah - Simbol)</button>
+                            <button class="btn btn-sm btn-outline-primary" id="btnLvl3" onclick="loadGameLevel(3)">Level 3 (Sikap Sekolah - Bunyi)</button>
+                        </div>
+                    </div>
+                    <button class="btn btn-sm btn-warning fw-bold" onclick="resetCurrentGameLevel()"><i class="bi bi-arrow-repeat"></i> Acak Ulang</button>
+                </div>
+
+                <p class="alert alert-info py-2 small fw-bold">👉 Petunjuk: Geser (Drag / Sentuh) kartu simbol di sebelah kiri ke kotak target Sila yang sesuai di sebelah kanan!</p>
+
+                <div class="row g-3">
+                    <div class="col-md-5">
+                        <h5 class="fw-bold text-center mb-3">Pilihan Simbol / Sikap (Tarik)</h5>
+                        <div id="gameSourceContainer" class="d-flex flex-column gap-2"></div>
+                    </div>
+                    <div class="col-md-7">
+                        <h5 class="fw-bold text-center mb-3">Pasangkan ke Sila / Target yang Tepat</h5>
+                        <div id="gameTargetContainer" class="d-flex flex-column gap-2"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION MENU 5: RIWAYAT SKOR -->
+        <section id="sectionRiwayat" class="hidden-section">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <button class="btn btn-outline-danger btn-custom" onclick="showSection('sectionMenuUtama')"><i class="bi bi-house-door-fill"></i> Kembali ke Menu Utama</button>
+                <h3 class="fw-bold text-secondary m-0">📊 Riwayat Hasil Belajarmu</h3>
+            </div>
+
+            <div class="card p-4 shadow-sm">
+                <div class="d-flex align-items-center gap-3 mb-3 p-3 bg-light rounded">
+                    <span class="fs-1">👤</span>
+                    <div>
+                        <h5 class="fw-bold mb-0" id="riwayatNamaUser">Nama Siswa</h5>
+                        <small class="text-muted" id="riwayatKelasUser">Kelas -</small>
+                    </div>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="table table-bordered table-striped align-middle">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>Jenis Aktivitas</th>
+                                <th>Tanggal / Waktu</th>
+                                <th>Skor</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tblBodyRiwayat">
+                            <tr><td colspan="4" class="text-center text-muted">Belum ada riwayat pengerjaan.</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION MENU 6: DASHBOARD GURU -->
+        <section id="sectionDashboardGuru" class="hidden-section">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <button class="btn btn-outline-danger btn-custom" onclick="showSection('sectionMenuUtama')"><i class="bi bi-house-door-fill"></i> Area Utama</button>
+                <h3 class="fw-bold text-dark m-0">👨‍🏫 Dashboard Guru & Rekap Evaluasi</h3>
+            </div>
+
+            <div class="row g-3 mb-4">
+                <div class="col-md-4">
+                    <div class="p-3 bg-white border rounded shadow-sm text-center">
+                        <span class="text-muted small">Total Siswa Terdaftar</span>
+                        <h2 class="fw-bold text-primary mb-0" id="guruStatTotalSiswa">0</h2>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="p-3 bg-white border rounded shadow-sm text-center">
+                        <span class="text-muted small">Rata-Rata Kuis Kelas</span>
+                        <h2 class="fw-bold text-success mb-0" id="guruStatAvgKuis">0</h2>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="p-3 bg-white border rounded shadow-sm text-center">
+                        <span class="text-muted small">Tingkat Kelulusan</span>
+                        <h2 class="fw-bold text-warning mb-0" id="guruStatPassRate">0%</h2>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card p-4 shadow-sm mb-4">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="fw-bold mb-0">📋 Tabel Rekapitulasi Nilai Siswa</h5>
+                    <div>
+                        <button class="btn btn-sm btn-primary" onclick="window.print()"><i class="bi bi-printer"></i> Cetak Rekap</button>
+                        <button class="btn btn-sm btn-danger ms-1" onclick="clearAllDataGuru()"><i class="bi bi-trash"></i> Reset Data</button>
+                    </div>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="table table-bordered align-middle">
+                        <thead class="table-secondary">
+                            <tr>
+                                <th>Nama Siswa</th>
+                                <th>Kelas</th>
+                                <th>Skor Evaluasi</th>
+                                <th>Game Simbol</th>
+                                <th>Tanggal Pengerjaan</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tblBodyGuru">
+                            <tr><td colspan="6" class="text-center text-muted">Belum ada data siswa.</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- MODAL POPUP GAMBAR CONTOH SIKAP -->
+    <div class="modal fade" id="modalSikap" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content text-center">
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title fw-bold" id="modalSikapTitle">Contoh Pengamalan</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <div id="modalSikapVisual" class="display-1 mb-3">🌟</div>
+                    <p id="modalSikapDesc" class="fs-5 fw-bold text-dark"></p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary btn-custom" data-bs-dismiss="modal">Tutup</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="text-center py-3 text-muted small border-top">
+        🇮🇩 Media Pembelajaran Interaktif Pancasila - Fase A SD &copy; 2026. All Rights Reserved.
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        /* STATE & AUDIO SYNTHESIZER */
+        let currentUser = null;
+        let currentLatihanIndex = 0;
+        let latihanScore = 0;
+        let currentKuisIndex = 0;
+        let kuisScore = 0;
+        let kuisTimerInterval = null;
+        let kuisTimeLeft = 600;
+
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        function playSoundEffect(type) {
+            try {
+                if (audioCtx.state === 'suspended') audioCtx.resume();
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+
+                if (type === 'correct' || type === 'fanfare') {
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(523.25, audioCtx.currentTime);
+                    osc.frequency.exponentialRampToValueAtTime(659.25, audioCtx.currentTime + 0.1);
+                    osc.frequency.exponentialRampToValueAtTime(783.99, audioCtx.currentTime + 0.2);
+                    osc.frequency.exponentialRampToValueAtTime(1046.50, audioCtx.currentTime + 0.3);
+                    gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.5);
+                    osc.start();
+                    osc.stop(audioCtx.currentTime + 0.5);
+                } else if (type === 'wrong') {
+                    osc.type = 'sawtooth';
+                    osc.frequency.setValueAtTime(220, audioCtx.currentTime);
+                    osc.frequency.setValueAtTime(180, audioCtx.currentTime + 0.15);
+                    gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+                    osc.start();
+                    osc.stop(audioCtx.currentTime + 0.3);
+                } else if (type === 'flip') {
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(400, audioCtx.currentTime);
+                    osc.frequency.exponentialRampToValueAtTime(800, audioCtx.currentTime + 0.1);
+                    gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
+                    osc.start();
+                    osc.stop(audioCtx.currentTime + 0.1);
+                }
+            } catch (e) {
+                console.log('Audio Context error:', e);
+            }
+        }
+
+        /* DATA DETAIL SILA (KELAS 1 & KELAS 2) */
+        const silaDataKelas1 = [
+            {
+                no: 1, nama: "Sila Ke-1", bunyi: "Ketuhanan Yang Maha Esa", simbol: "Bintang Emas", icon: "⭐",
+                contoh: [
+                    { desc: "Berdoa bersama keluarga sebelum dan sesudah makan.", visual: "🤲" },
+                    { desc: "Mengucapkan doa sebelum tidur dan saat bangun tidur.", visual: "🛌" },
+                    { desc: "Mengikuti kegiatan ibadah di rumah bersama orang tua.", visual: "🕌" }
+                ]
+            },
+            {
+                no: 2, nama: "Sila Ke-2", bunyi: "Kemanusiaan yang adil dan beradab", simbol: "Rantai Emas", icon: "🔗",
+                contoh: [
+                    { desc: "Membantu adik merapikan mainan yang berserakan.", visual: "🧸" },
+                    { desc: "Berbicara sopan dengan mengucapkan kata 'tolong' dan 'terima kasih'.", visual: "🗣️️" },
+                    { desc: "Menyayangi dan tidak menyakiti hewan peliharaan di rumah.", visual: "🐱" }
+                ]
+            },
+            {
+                no: 3, nama: "Sila Ke-3", bunyi: "Persatuan Indonesia", simbol: "Pohon Beringin", icon: "🌳",
+                contoh: [
+                    { desc: "Rukun dan mau berbagi mainan dengan saudara saat di rumah.", visual: "⚽" },
+                    { desc: "Bekerja sama membantu Ibu merapikan tempat tidur.", visual: "🧹" },
+                    { desc: "Tidak bertengkar atau berebut barang dengan kakak atau adik.", visual: "🤝" }
+                ]
+            },
+            {
+                no: 4, nama: "Sila Ke-4", bunyi: "Kerakyatan yang dipimpin oleh hikmat kebijaksanaan dalam permusyawaratan/perwakilan", simbol: "Kepala Banteng", icon: "🐂",
+                contoh: [
+                    { desc: "Penurut dan mendengarkan nasihat dari Ayah dan Ibu.", visual: "👂" },
+                    { desc: "Mengikuti keputusan Ayah dan Ibu saat menentukan waktu belajar.", visual: "⏰" },
+                    { desc: "Meminta izin secara baik-baik saat ingin meminjam barang saudara.", visual: "🙋‍♂️" }
+                ]
+            },
+            {
+                no: 5, nama: "Sila Ke-5", bunyi: "Keadilan sosial bagi seluruh rakyat Indonesia", simbol: "Padi dan Kapas", icon: "🌾",
+                contoh: [
+                    { desc: "Membagi makanan secara adil dan merata kepada saudara.", visual: "🍰" },
+                    { desc: "Tidak membuang-buang makanan yang sudah diambil.", visual: "🍱" },
+                    { desc: "Mengembalikan barang atau mainan ke tempatnya setelah digunakan.", visual: "📦" }
+                ]
+            }
+        ];
+
+        const silaDataKelas2 = [
+            {
+                no: 1, nama: "Sila Ke-1", simbol: "Bintang Emas", icon: "⭐",
+                makna: "Cahaya bintang melambangkan bimbingan dan petunjuk dari Tuhan Yang Maha Esa bagi seluruh manusia.",
+                contoh: [
+                    { desc: "Rajin beribadah tepat waktu sesuai ajaran agama masing-masing.", visual: "📖" },
+                    { desc: "Menghormati dan tidak mengganggu anggota keluarga yang sedang beribadah.", visual: "🤫" },
+                    { desc: "Membiasakan bersyukur atas setiap rezeki dan makanan yang diterima di rumah.", visual: "🙏" },
+                    { desc: "Menjaga kebersihan diri dan rumah sebagai wujud rasa syukur kepada Tuhan.", visual: "🚰" }
+                ]
+            },
+            {
+                no: 2, nama: "Sila Ke-2", simbol: "Rantai Emas", icon: "🔗",
+                makna: "Mata rantai berbentuk segi empat dan lingkaran yang saling menyambung melambangkan hubungan antarmanusia yang saling bersatu dan membantu.",
+                contoh: [
+                    { desc: "Merawat dan menemani anggota keluarga yang sedang sakit.", visual: "🤒" },
+                    { desc: "Menolong pekerjaan rumah orang tua tanpa mengeluh.", visual: "🧺" },
+                    { desc: "Meminta maaf dengan tulus jika berbuat kesalahan kepada anggota keluarga.", visual: "🤝" },
+                    { desc: "Bersikap santun dan menghormati anggota keluarga yang lebih tua.", visual: "🙇‍♂️" }
+                ]
+            },
+            {
+                no: 3, nama: "Sila Ke-3", simbol: "Pohon Beringin", icon: "🌳",
+                makna: "Akar yang kuat dan rindangnya daun melambangkan tempat berteduh dan perlindungan untuk seluruh rakyat Indonesia agar tetap bersatu.",
+                contoh: [
+                    { desc: "Bergotong royong bersama seluruh anggota keluarga membersihkan lingkungan rumah.", visual: "🏡" },
+                    { desc: "Mengutamakan kerukunan dan menjaga nama baik keluarga di lingkungan rumah.", visual: "❤️" },
+                    { desc: "Menyelesaikan perbedaan pendapat atau perselisihan dengan saudara secara damai.", visual: "🕊️" },
+                    { desc: "Saling mendukung dan bekerja sama saat menyelesaikan tugas harian di rumah.", visual: "👏" }
+                ]
+            },
+            {
+                no: 4, nama: "Sila Ke-4", simbol: "Kepala Banteng", icon: "🐂",
+                makna: "Banteng melambangkan hewan sosial yang suka berkumpul, mencerminkan kebiasaan bermusyawarah dan berdiskusi untuk mengambil keputusan bersama.",
+                contoh: [
+                    { desc: "Ikut serta dalam diskusi keluarga untuk menentukan tujuan tempat liburan.", visual: "🏖️" },
+                    { desc: "Bermusyawarah bersama saudara untuk membagi jadwal piket atau tugas harian di rumah.", visual: "📅" },
+                    { desc: "Mengungkapkan pendapat pribadi secara sopan saat diajak berdiskusi oleh orang tua.", visual: "💬" },
+                    { desc: "Menerima dan menjalankan hasil keputusan keluarga dengan ikhlas dan bertanggung jawab.", visual: "👍" }
+                ]
+            },
+            {
+                no: 5, nama: "Sila Ke-5", simbol: "Padi dan Kapas", icon: "🌾",
+                makna: "Padi (pangan) dan kapas (sandang) melambangkan kebutuhan pokok seluruh rakyat Indonesia secara adil.",
+                contoh: [
+                    { desc: "Membiasakan hidup hemat dengan rajin menyisihkan uang saku untuk menabung.", visual: "🪙" },
+                    { desc: "Membagi makanan, camilan, atau oleh-oleh secara adil tanpa pilih kasih kepada saudara.", visual: "🍪" },
+                    { desc: "Mengatur waktu secara seimbang antara belajar, membantu orang tua, dan bermain.", visual: "⏳" },
+                    { desc: "Tidak bergaya hidup mewah atau bersikap boros dalam menggunakan air dan listrik di rumah.", visual: "💡" }
+                ]
+            }
+        ];
+
+        /* BANK SOAL LATIHAN & KUIS */
+        const bankLatihanSoal = [
+            { q: "Apa nama lambang negara Republik Indonesia?", options: ["Burung Garuda Pancasila", "Harimau Sumatra", "Pohon Beringin"], ans: 0, pembahasan: "Lambang negara Indonesia adalah Burung Garuda Pancasila dengan pita Bhinneka Tunggal Ika." },
+            { q: "Warna merah pada bendera Sang Merah Putih artinya adalah...", options: ["Suci", "Berani", "Jujur"], ans: 1, pembahasan: "Merah artinya berani dan putih artinya suci." },
+            { q: "Lagu kebangsaan Indonesia Raya diciptakan oleh...", options: ["Ir. Soekarno", "W.R. Supratman", "Moh. Hatta"], ans: 1, pembahasan: "W.R. Supratman adalah pencipta lagu kebangsaan Indonesia Raya." },
+            { q: "Simbol Bintang Emas melambangkan Sila Pancasila ke-...", options: ["Satu (1)", "Dua (2)", "Tiga (3)"], ans: 0, pembahasan: "Bintang Emas melambangkan Sila ke-1: Ketuhanan Yang Maha Esa." },
+            { q: "Berdoa sebelum dan sesudah makan adalah contoh pengamalan Sila ke-...", options: ["Sila ke-1", "Sila ke-2", "Sila ke-5"], ans: 0, pembahasan: "Kegiatan berdoa berkaitan dengan rasa syukur kepada Tuhan (Sila 1)." },
+            { q: "Membantu adik merapikan mainan merupakan contoh pengamalan Sila ke-...", options: ["Sila ke-1", "Sila ke-2", "Sila ke-4"], ans: 1, pembahasan: "Sikap saling membantu dan menyayangi sesama sesuai Sila ke-2 (Kemanusiaan)." },
+            { q: "Semboyan 'Bhinneka Tunggal Ika' memiliki arti...", options: ["Bersama kita teguh", "Berbeda-beda tetapi tetap satu jua", "Bersatu kita teguh"], ans: 1, pembahasan: "Bhinneka Tunggal Ika artinya berbeda-beda tetapi tetap satu jua." },
+            { q: "Simbol Sila ke-4 Pancasila adalah...", options: ["Pohon Beringin", "Kepala Banteng", "Rantai Emas"], ans: 1, pembahasan: "Sila ke-4 disimbolkan dengan Kepala Banteng." },
+            { q: "Sikap yang benar saat upacara bendera ketika bendera dikibarkan adalah...", options: ["Ngobrol dengan teman", "Berdiri tegak dan hormat khidmat", "Duduk santai"], ans: 1, pembahasan: "Saat upacara bendera kita wajib berdiri tegak dan hormat dengan tertib." },
+            { q: "Rajin menyisihkan uang saku untuk menabung di rumah adalah contoh Sila ke-...", options: ["Sila ke-3", "Sila ke-5", "Sila ke-2"], ans: 1, pembahasan: "Membiasakan hidup hemat dan tidak boros sesuai pengamalan Sila ke-5." }
+        ];
+
+        const bankKuisEvaluasi = [
+            { q: "Lambang negara Indonesia berbentuk burung...", options: ["Elang", "Garuda", "Cendrawasih"], ans: 1 },
+            { q: "Simbol Sila ke-1 Pancasila yaitu...", options: ["Bintang Emas", "Rantai", "Padi Kapas"], ans: 0 },
+            { q: "Sila kedua Pancasila berbunyi...", options: ["Persatuan Indonesia", "Kemanusiaan yang adil dan beradab", "Ketuhanan Yang Maha Esa"], ans: 1 },
+            { q: "Pohon Beringin adalah simbol Pancasila Sila ke-...", options: ["2", "3", "4"], ans: 1 },
+            { q: "Warna putih pada bendera negara mengandung arti...", options: ["Berani", "Suci", "Megah"], ans: 1 },
+            { q: "Musyawarah pembagian tugas piket rumah sesuai Sila ke-...", options: ["Sila 4", "Sila 1", "Sila 2"], ans: 0 },
+            { q: "Semboyan Bhinneka Tunggal Ika dicengkeram oleh Garuda di bagian...", options: ["Kepala", "Perisai", "Pita di Kaki"], ans: 2 },
+            { q: "Lagu Indonesia Raya wajib dinyanyikan dengan sikap...", options: ["Bercanda", "Berdiri Tegak & Khidmat", "Sambil Berlari"], ans: 1 },
+            { q: "Membagi makanan secara adil kepada adik dan kakak adalah penerapan Sila ke-...", options: ["Sila 5", "Sila 1", "Sila 3"], ans: 0 },
+            { q: "Simbol Padi dan Kapas melambangkan kebutuhan pokok berupa...", options: ["Mainan", "Pangan dan Sandang", "Uang"], ans: 1 },
+            { q: "Mata rantai berbentuk lingkaran dan segi empat melambangkan...", options: ["Persatuan & Saling Membantu", "Perbedaan", "Permusuhan"], ans: 0 },
+            { q: "Bendera Merah Putih tidak boleh...", options: ["Dikibarkan", "Menyentuh Tanah", "Dilihat"], ans: 1 },
+            { q: "Hari Kemerdekaan Indonesia diperingati setiap tanggal...", options: ["17 Agustus", "28 Oktober", "2 Mei"], ans: 0 },
+            { q: "Mengucapkan kata 'tolong' saat minta bantuan adalah contoh perilaku...", options: ["Sopan / Beradab", "Sombong", "Arogansi"], ans: 0 },
+            { q: "Bergotong royong membersihkan lingkungan rumah merupakan cerminan Sila ke-...", options: ["Sila 3", "Sila 1", "Sila 4"], ans: 0 },
+            { q: "Sebelum makan dan tidur, kita dibiasakan untuk...", options: ["Berdoa", "Bermain Game", "Berteriak"], ans: 0 },
+            { q: "Banteng dipilih sebagai simbol Sila ke-4 karena banteng suka...", options: ["Tidur", "Berkumpul & Bermusyawarah", "Sendirian"], ans: 1 },
+            { q: "Jika berbuat kesalahan kepada anggota keluarga, kita harus...", options: ["Pura-pura tidak tahu", "Meminta maaf dengan tulus", "Marah"], ans: 1 },
+            { q: "Pencipta lagu Indonesia Raya adalah...", options: ["W.R. Supratman", "H. Mutahar", "Ibu Sud"], ans: 0 },
+            { q: "Perisai di dada Burung Garuda melambangkan...", options: ["Perjuangan & Perlindungan Diri", "Hiasan", "Kemewahan"], ans: 0 }
+        ];
+
+        /* AUTENTIKASI LOGIN & NAVIGASI */
+        function handleLoginSiswa(e) {
+            e.preventDefault();
+            const nama = document.getElementById('inputNamaSiswa').value.trim();
+            const kelas = document.getElementById('selectKelasSiswa').value;
+            if(!nama) return;
+
+            currentUser = { nama: nama, kelas: kelas, isGuru: false };
+            updateUserUI();
+            showSection('sectionMenuUtama');
+            setupMateriView();
+        }
+
+        function handleLoginGuru(e) {
+            e.preventDefault();
+            const pin = document.getElementById('inputPinGuru').value;
+            if(pin === "guru123") {
+                currentUser = { nama: "Guru Pendidik", kelas: "Guru", isGuru: true };
+                updateUserUI();
+                showSection('sectionDashboardGuru');
+                renderDashboardGuru();
+            } else {
+                alert("PIN Guru salah! Gunakan default: guru123");
+            }
+        }
+
+        function checkGuruAuthDashboard() {
+            if(currentUser && currentUser.isGuru) {
+                showSection('sectionDashboardGuru');
+                renderDashboardGuru();
+            } else {
+                const pin = prompt("Masukkan PIN Guru untuk mengakses Area Guru:");
+                if(pin === "guru123") {
+                    currentUser = { nama: "Guru Pendidik", kelas: "Guru", isGuru: true };
+                    updateUserUI();
+                    showSection('sectionDashboardGuru');
+                    renderDashboardGuru();
+                } else if(pin !== null) {
+                    alert("PIN Salah!");
+                }
+            }
+        }
+
+        function logoutSession() {
+            currentUser = null;
+            document.getElementById('userInfoDisplay').style.display = 'none';
+            showSection('sectionLogin');
+        }
+
+        function updateUserUI() {
+            if(!currentUser) return;
+            document.getElementById('userInfoDisplay').style.display = 'block';
+            document.getElementById('lblNamaSiswa').innerText = "Pengguna: " + currentUser.nama;
+            let labelKls = currentUser.kelas === '1' ? "Kelas 1 SD" : (currentUser.kelas === '2' ? "Kelas 2 SD" : (currentUser.kelas === 'faseA' ? "Ringkasan Fase A" : "Guru"));
+            document.getElementById('lblKelasSiswa').innerText = "Jenjang: " + labelKls;
+        }
+
+        function showSection(sectionId) {
+            const sections = ['sectionLogin', 'sectionMenuUtama', 'sectionMateri', 'sectionLatihan', 'sectionKuis', 'sectionHasilKuis', 'sectionGame', 'sectionRiwayat', 'sectionDashboardGuru'];
+            sections.forEach(id => {
+                const el = document.getElementById(id);
+                if(el) el.classList.add('hidden-section');
+            });
+            document.getElementById(sectionId).classList.remove('hidden-section');
+            window.scrollTo(0, 0);
+        }
+
+        /* LOGIKA NAVIGASI MATERI STEP-BY-STEP */
+        function setupMateriView() {
+            document.getElementById('materiKelas1View').classList.add('hidden-section');
+            document.getElementById('materiKelas2View').classList.add('hidden-section');
+            document.getElementById('materiFaseAView').classList.add('hidden-section');
+
+            if(!currentUser || currentUser.kelas === '1') {
+                document.getElementById('materiKelas1View').classList.remove('hidden-section');
+                renderSilaKelas1();
+                renderFlashcards();
+            } else if(currentUser.kelas === '2') {
+                document.getElementById('materiKelas2View').classList.remove('hidden-section');
+                renderSilaKelas2();
+            } else {
+                document.getElementById('materiFaseAView').classList.remove('hidden-section');
+            }
+        }
+
+        function nextStepK1(curr, next) {
+            playSoundEffect('flip');
+            document.getElementById(`k1_m1_step${curr}`).classList.add('hidden-section');
+            document.getElementById(`k1_m1_step${next}`).classList.remove('hidden-section');
+        }
+
+        function nextStepK2(curr, next) {
+            playSoundEffect('flip');
+            document.getElementById(`k2_m1_step${curr}`).classList.add('hidden-section');
+            document.getElementById(`k2_m1_step${next}`).classList.remove('hidden-section');
+        }
+
+        function nextRingkasan(curr, next) {
+            playSoundEffect('flip');
+            document.getElementById(`ringkasanStep${curr}`).classList.add('hidden-section');
+            document.getElementById(`ringkasanStep${next}`).classList.remove('hidden-section');
+        }
+
+        function renderSilaKelas1() {
+            const container = document.getElementById('k1_sila_container');
+            container.innerHTML = "";
+            silaDataKelas1.forEach((item, index) => {
+                const stepDiv = document.createElement('div');
+                stepDiv.className = `k1_sila_step ${index > 0 ? 'hidden-section' : ''}`;
+                stepDiv.id = `k1_sila_step_${index}`;
+
+                let contohHtml = "";
+                item.contoh.forEach(c => {
+                    contohHtml += `<li onclick="showModalSikap('${item.nama} - Contoh', '${c.desc}')" class="popup-img-trigger mb-2">${c.visual} ${c.desc}</li>`;
+                });
+
+                stepDiv.innerHTML = `
+                    <div class="card p-3 border-warning bg-light mb-3">
+                        <div class="text-center">
+                            <span class="display-3">${item.icon}</span>
+                            <h4 class="fw-bold text-danger mt-2">${item.nama}</h4>
+                            <h5 class="fw-bold">"${item.bunyi}"</h5>
+                            <p class="badge bg-gold text-dark fs-6">Simbol: ${item.simbol}</p>
+                        </div>
+                        <hr>
+                        <h6 class="fw-bold text-primary">Contoh Pengamalan di Rumah (Klik Kalimat):</h6>
+                        <ul>${contohHtml}</ul>
+                        <div class="d-flex justify-content-between mt-3">
+                            ${index > 0 ? `<button class="btn btn-secondary btn-custom" onclick="showSilaK1Step(${index - 1})"><i class="bi bi-arrow-left"></i> Sebelumnya</button>` : '<div></div>'}
+                            ${index < silaDataKelas1.length - 1 ? `<button class="btn btn-red btn-custom" onclick="showSilaK1Step(${index + 1})">Selanjutnya <i class="bi bi-arrow-right"></i></button>` : ''}
+                        </div>
+                    </div>
+                `;
+                container.appendChild(stepDiv);
+            });
+        }
+
+        function showSilaK1Step(idx) {
+            playSoundEffect('flip');
+            document.querySelectorAll('.k1_sila_step').forEach(el => el.classList.add('hidden-section'));
+            document.getElementById(`k1_sila_step_${idx}`).classList.remove('hidden-section');
+        }
+
+        function renderSilaKelas2() {
+            const container = document.getElementById('k2_sila_container');
+            container.innerHTML = "";
+            silaDataKelas2.forEach((item, index) => {
+                const stepDiv = document.createElement('div');
+                stepDiv.className = `k2_sila_step ${index > 0 ? 'hidden-section' : ''}`;
+                stepDiv.id = `k2_sila_step_${index}`;
+
+                let contohHtml = "";
+                item.contoh.forEach(c => {
+                    contohHtml += `<li onclick="showModalSikap('${item.nama} - Makna & Sikap', '${c.desc}')" class="popup-img-trigger mb-2">${c.visual} ${c.desc}</li>`;
+                });
+
+                stepDiv.innerHTML = `
+                    <div class="card p-3 border-primary bg-light mb-3">
+                        <div class="text-center">
+                            <span class="display-3">${item.icon}</span>
+                            <h4 class="fw-bold text-primary mt-2">${item.nama} (${item.simbol})</h4>
+                            <p class="alert alert-info py-2 small"><strong>Makna Filosofis:</strong> ${item.makna}</p>
+                        </div>
+                        <hr>
+                        <h6 class="fw-bold text-success">Contoh Pengamalan Nilai di Rumah (4 Contoh - Klik Kalimat):</h6>
+                        <ul>${contohHtml}</ul>
+                        <div class="d-flex justify-content-between mt-3">
+                            ${index > 0 ? `<button class="btn btn-secondary btn-custom" onclick="showSilaK2Step(${index - 1})"><i class="bi bi-arrow-left"></i> Sebelumnya</button>` : '<div></div>'}
+                            ${index < silaDataKelas2.length - 1 ? `<button class="btn btn-primary btn-custom" onclick="showSilaK2Step(${index + 1})">Selanjutnya <i class="bi bi-arrow-right"></i></button>` : ''}
+                        </div>
+                    </div>
+                `;
+                container.appendChild(stepDiv);
+            });
+        }
+
+        function showSilaK2Step(idx) {
+            playSoundEffect('flip');
+            document.querySelectorAll('.k2_sila_step').forEach(el => el.classList.add('hidden-section'));
+            document.getElementById(`k2_sila_step_${idx}`).classList.remove('hidden-section');
+        }
+
+        function renderFlashcards() {
+            const container = document.getElementById('flashcardContainer');
+            container.innerHTML = "";
+            silaDataKelas1.forEach(item => {
+                const col = document.createElement('div');
+                col.className = "col-md-4 col-6";
+                col.innerHTML = `
+                    <div class="flashcard" onclick="flipCard(this)">
+                        <div class="flashcard-inner">
+                            <div class="flashcard-front">
+                                <span class="fs-1">${item.icon}</span>
+                                <h6 class="fw-bold mt-2">${item.nama}</h6>
+                                <p class="small text-muted mb-0">${item.simbol}</p>
+                                <span class="badge bg-warning text-dark mt-2">Klik untuk membalik 🔄</span>
+                            </div>
+                            <div class="flashcard-back">
+                                <span class="fs-2">${item.icon}</span>
+                                <h6 class="fw-bold">${item.nama}</h6>
+                                <p class="small fw-bold mb-0">"${item.bunyi}"</p>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(col);
+            });
+        }
+
+        function flipCard(cardEl) {
+            playSoundEffect('flip');
+            cardEl.classList.toggle('flipped');
+        }
+
+        function showModalSikap(title, desc) {
+            playSoundEffect('fanfare');
+            document.getElementById('modalSikapTitle').innerText = title;
+            document.getElementById('modalSikapDesc').innerText = desc;
+            const modal = new bootstrap.Modal(document.getElementById('modalSikap'));
+            modal.show();
+        }
+
+        /* LATIHAN SOAL INTERAKTIF */
+        function startLatihanSoal() {
+            currentLatihanIndex = 0;
+            latihanScore = 0;
+            showSection('sectionLatihan');
+            loadLatihanQuestion();
+        }
+
+        function loadLatihanQuestion() {
+            document.getElementById('latihanFeedbackBox').classList.add('hidden-section');
+            const item = bankLatihanSoal[currentLatihanIndex];
+            document.getElementById('latihanProgress').innerText = `Soal ${currentLatihanIndex + 1} dari ${bankLatihanSoal.length}`;
+            document.getElementById('latihanScoreBadge').innerText = `Skor Sementara: ${latihanScore}`;
+            document.getElementById('latihanQuestionText').innerText = item.q;
+
+            const optContainer = document.getElementById('latihanOptionsContainer');
+            optContainer.innerHTML = "";
+            item.options.forEach((opt, idx) => {
+                const btn = document.createElement('button');
+                btn.className = "btn btn-outline-primary text-start btn-custom fs-6 py-2";
+                btn.innerText = `${String.fromCharCode(65 + idx)}. ${opt}`;
+                btn.onclick = () => checkLatihanAnswer(idx);
+                optContainer.appendChild(btn);
+            });
+        }
+
+        function checkLatihanAnswer(selectedIdx) {
+            const item = bankLatihanSoal[currentLatihanIndex];
+            const feedbackBox = document.getElementById('latihanFeedbackBox');
+            const feedbackTitle = document.getElementById('latihanFeedbackTitle');
+            const feedbackDesc = document.getElementById('latihanFeedbackDesc');
+            const pembahasanText = document.getElementById('latihanPembahasanText');
+
+            const btns = document.getElementById('latihanOptionsContainer').getElementsByTagName('button');
+            for(let b of btns) b.disabled = true;
+
+            if(selectedIdx === item.ans) {
+                playSoundEffect('correct');
+                latihanScore += 10;
+                feedbackBox.className = "alert alert-success mt-3";
+                feedbackTitle.innerHTML = "🎉 Benar Sekali! 👍⭐";
+                feedbackDesc.innerText = "Jawabanmu tepat! Kamu hebat!";
+            } else {
+                playSoundEffect('wrong');
+                feedbackBox.className = "alert alert-danger mt-3";
+                feedbackTitle.innerHTML = "❌ Kurang Tepat 😅";
+                feedbackDesc.innerText = `Jawaban yang benar adalah: ${String.fromCharCode(65 + item.ans)}. ${item.options[item.ans]}`;
+            }
+
+            pembahasanText.innerText = item.pembahasan;
+            feedbackBox.classList.remove('hidden-section');
+            document.getElementById('latihanScoreBadge').innerText = `Skor Sementara: ${latihanScore}`;
+        }
+
+        function nextLatihanSoal() {
+            currentLatihanIndex++;
+            if(currentLatihanIndex < bankLatihanSoal.length) {
+                loadLatihanQuestion();
+            } else {
+                playSoundEffect('fanfare');
+                alert(`Latihan Soal Selesai! Skor Akhir Latihanmu: ${latihanScore} / 100`);
+                saveScoreRecord("Latihan Soal Interaktif", latihanScore, latihanScore >= 70 ? "Lulus" : "Perlu Belajar");
+                showSection('sectionMenuUtama');
+            }
+        }
+
+        /* SOAL EVALUASI / KUIS */
+        let selectedKuisAnswer = null;
+
+        function startKuisEvaluasi() {
+            currentKuisIndex = 0;
+            kuisScore = 0;
+            kuisTimeLeft = 600;
+            showSection('sectionKuis');
+            loadKuisQuestion();
+            startKuisTimer();
+        }
+
+        function startKuisTimer() {
+            clearInterval(kuisTimerInterval);
+            kuisTimerInterval = setInterval(() => {
+                kuisTimeLeft--;
+                let m = Math.floor(kuisTimeLeft / 60);
+                let s = kuisTimeLeft % 60;
+                document.getElementById('kuisTimer').innerText = `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+                if(kuisTimeLeft <= 0) {
+                    clearInterval(kuisTimerInterval);
+                    alert("Waktu ujian telah habis!");
+                    finishKuisEvaluasi();
+                }
+            }, 1000);
+        }
+
+        function loadKuisQuestion() {
+            selectedKuisAnswer = null;
+            document.getElementById('btnSubmitKuisAns').disabled = true;
+            const item = bankKuisEvaluasi[currentKuisIndex];
+            document.getElementById('kuisProgress').innerText = `Soal ${currentKuisIndex + 1} dari ${bankKuisEvaluasi.length}`;
+            document.getElementById('kuisQuestionText').innerText = item.q;
+
+            const optContainer = document.getElementById('kuisOptionsContainer');
+            optContainer.innerHTML = "";
+            item.options.forEach((opt, idx) => {
+                const btn = document.createElement('button');
+                btn.className = "btn btn-outline-dark text-start btn-custom py-2";
+                btn.innerText = `${String.fromCharCode(65 + idx)}. ${opt}`;
+                btn.onclick = () => {
+                    for(let b of optContainer.children) b.classList.remove('active', 'btn-primary');
+                    btn.classList.add('active', 'btn-primary');
+                    selectedKuisAnswer = idx;
+                    document.getElementById('btnSubmitKuisAns').disabled = false;
+                };
+                optContainer.appendChild(btn);
+            });
+        }
+
+        function submitKuisAnswer() {
+            if(selectedKuisAnswer === null) return;
+            const item = bankKuisEvaluasi[currentKuisIndex];
+            if(selectedKuisAnswer === item.ans) {
+                kuisScore += 5;
+            }
+
+            currentKuisIndex++;
+            if(currentKuisIndex < bankKuisEvaluasi.length) {
+                loadKuisQuestion();
+            } else {
+                clearInterval(kuisTimerInterval);
+                finishKuisEvaluasi();
+            }
+        }
+
+        function exitKuis() {
+            if(confirm("Apakah Anda yakin ingin keluar dari Evaluasi? Nilai tidak akan tersimpan.")) {
+                clearInterval(kuisTimerInterval);
+                showSection('sectionMenuUtama');
+            }
+        }
+
+        function finishKuisEvaluasi() {
+            playSoundEffect('fanfare');
+            showSection('sectionHasilKuis');
+            
+            const nama = currentUser ? currentUser.nama : "Siswa Hebat";
+            const status = kuisScore >= 70 ? "LULUS 🎉" : "PERLU BELAJAR 📚";
+
+            document.getElementById('certNamaSiswa').innerText = nama;
+            document.getElementById('certNilai').innerText = kuisScore;
+            document.getElementById('certStatus').innerText = status;
+
+            let bintang = "⭐";
+            if(kuisScore >= 90) bintang = "⭐⭐⭐⭐⭐";
+            else if(kuisScore >= 80) bintang = "⭐⭐⭐⭐";
+            else if(kuisScore >= 70) bintang = "⭐⭐⭐";
+            else bintang = "⭐⭐";
+            document.getElementById('certBintangDisplay').innerText = bintang;
+
+            saveScoreRecord("Kuis Evaluasi Akhir", kuisScore, status);
+        }
+
+        function downloadCertificate() {
+            const element = document.getElementById('certificateArea');
+            const opt = {
+                margin:       0.5,
+                filename:     `Sertifikat_Pancasila_${currentUser ? currentUser.nama : 'Siswa'}.pdf`,
+                image:        { type: 'jpeg', quality: 0.98 },
+                html2canvas:  { scale: 2 },
+                jsPDF:        { unit: 'in', format: 'letter', orientation: 'landscape' }
+            };
+            html2pdf().set(opt).from(element).save();
+        }
+
+        /* GAME PASANG SIMBOL (3 LEVEL) */
+        let currentGameLevel = 1;
+        const gameLevelsData = {
+            1: [
+                { id: "g1", source: "⭐ Bintang Emas", target: "Sila Ke-1" },
+                { id: "g2", source: "🔗 Rantai Emas", target: "Sila Ke-2" },
+                { id: "g3", source: "🌳 Pohon Beringin", target: "Sila Ke-3" },
+                { id: "g4", source: "🐂 Kepala Banteng", target: "Sila Ke-4" },
+                { id: "g5", source: "🌾 Padi & Kapas", target: "Sila Ke-5" }
+            ],
+            2: [
+                { id: "g1", source: "🤲 Berdoa Sebelum Makan", target: "⭐ Simbol Sila 1" },
+                { id: "g2", source: "🧸 Bantu Adik Rapikan Mainan", target: "🔗 Simbol Sila 2" },
+                { id: "g3", source: "🧹 Rukun Saling Membantu Rumah", target: "🌳 Simbol Sila 3" },
+                { id: "g4", source: "👂 Mendengarkan Nasihat Orang Tua", target: "🐂 Simbol Sila 4" },
+                { id: "g5", source: "🪙 Menyisihkan Uang Menabung", target: "🌾 Simbol Sila 5" }
+            ],
+            3: [
+                { id: "g1", source: "🏫 Menghormati Teman Beda Agama", target: "Ketuhanan Yang Maha Esa" },
+                { id: "g2", source: "🤝 Bersikap Sopan pada Guru & Teman", target: "Kemanusiaan yang Adil dan Beradab" },
+                { id: "g3", source: "🇮🇩 Upacara Bendera Bersama Tertib", target: "Persatuan Indonesia" },
+                { id: "g4", source: "🗳️ Musyawarah Pemilihan Ketua Kelas", target: "Kerakyatan yang Dipimpin..." },
+                { id: "g5", source: "🧹 Piket Kelas Bersama Secara Adil", target: "Keadilan Sosial..." }
+            ]
+        };
+
+        function loadGameLevel(lvl) {
+            currentGameLevel = lvl;
+            document.getElementById('btnLvl1').classList.toggle('active', lvl===1);
+            document.getElementById('btnLvl2').classList.toggle('active', lvl===2);
+            document.getElementById('btnLvl3').classList.toggle('active', lvl===3);
+            resetCurrentGameLevel();
+        }
+
+        function resetCurrentGameLevel() {
+            const data = [...gameLevelsData[currentGameLevel]];
+            const shuffledSource = [...data].sort(() => Math.random() - 0.5);
+            const shuffledTarget = [...data].sort(() => Math.random() - 0.5);
+
+            const sourceBox = document.getElementById('gameSourceContainer');
+            const targetBox = document.getElementById('gameTargetContainer');
+            sourceBox.innerHTML = "";
+            targetBox.innerHTML = "";
+
+            shuffledSource.forEach(item => {
+                const el = document.createElement('div');
+                el.className = "card p-3 bg-warning text-dark fw-bold draggable-item shadow-sm text-center";
+                el.draggable = true;
+                el.dataset.id = item.id;
+                el.innerText = item.source;
+                el.ondragstart = (e) => e.dataTransfer.setData("text/plain", item.id);
+                sourceBox.appendChild(el);
+            });
+
+            shuffledTarget.forEach(item => {
+                const dropDiv = document.createElement('div');
+                dropDiv.className = "drop-zone p-3 fw-bold text-center";
+                dropDiv.dataset.id = item.id;
+                dropDiv.innerText = item.target;
+
+                dropDiv.ondragover = (e) => { e.preventDefault(); dropDiv.classList.add('hovered'); };
+                dropDiv.ondragleave = () => dropDiv.classList.remove('hovered');
+                dropDiv.ondrop = (e) => {
+                    e.preventDefault();
+                    dropDiv.classList.remove('hovered');
+                    const draggedId = e.dataTransfer.getData("text/plain");
+                    if(draggedId === item.id) {
+                        playSoundEffect('correct');
+                        dropDiv.className = "p-3 bg-success text-white fw-bold text-center rounded border border-2 border-dark";
+                        dropDiv.innerText = `✅ PAS! (${item.target})`;
+                        const srcEl = sourceBox.querySelector(`[data-id="${draggedId}"]`);
+                        if(srcEl) srcEl.style.visibility = 'hidden';
+                        checkGameCompletion();
+                    } else {
+                        playSoundEffect('wrong');
+                        alert("Pasangan belum pas! Coba taruh di tempat lain ya!");
+                    }
+                };
+                targetBox.appendChild(dropDiv);
+            });
+        }
+
+        function checkGameCompletion() {
+            const remaining = document.querySelectorAll('#gameSourceContainer .draggable-item[style*="visibility: hidden"]');
+            if(remaining.length === 5) {
+                playSoundEffect('fanfare');
+                setTimeout(() => {
+                    alert(`🎉 Luar biasa! Kamu berhasil menyelesaikan Game Pasang Simbol Level ${currentGameLevel}!`);
+                    saveScoreRecord(`Game Pasang Simbol (Lvl ${currentGameLevel})`, 100, "Selesai Sempurna");
+                }, 300);
+            }
+        }
+
+        /* STORAGE, RIWAYAT SKOR & DASHBOARD GURU */
+        function saveScoreRecord(aktivitas, skor, status) {
+            const records = JSON.parse(localStorage.getItem('pancasila_scores') || '[]');
+            const newRecord = {
+                nama: currentUser ? currentUser.nama : "Siswa Anonim",
+                kelas: currentUser ? (currentUser.kelas === '1' ? "Kelas 1" : (currentUser.kelas === '2' ? "Kelas 2" : "Fase A")) : "Kelas 1",
+                aktivitas: aktivitas,
+                skor: skor,
+                status: status,
+                tanggal: new Date().toLocaleString('id-ID')
+            };
+            records.unshift(newRecord);
+            localStorage.setItem('pancasila_scores', JSON.stringify(records));
+        }
+
+        function showRiwayatSkor() {
+            showSection('sectionRiwayat');
+            const records = JSON.parse(localStorage.getItem('pancasila_scores') || '[]');
+            const tbody = document.getElementById('tblBodyRiwayat');
+            tbody.innerHTML = "";
+
+            document.getElementById('riwayatNamaUser').innerText = currentUser ? currentUser.nama : "Siswa";
+            document.getElementById('riwayatKelasUser').innerText = currentUser ? "Jenjang: " + currentUser.kelas : "Kelas -";
+
+            const userRecords = records.filter(r => !currentUser || r.nama === currentUser.nama);
+
+            if(userRecords.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="4" class="text-center text-muted">Belum ada riwayat pengerjaan kuis/latihan.</td></tr>`;
+                return;
+            }
+
+            userRecords.forEach(r => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td><strong>${r.aktivitas}</strong></td>
+                    <td>${r.tanggal}</td>
+                    <td><span class="badge bg-primary fs-6">${r.skor}</span></td>
+                    <td><span class="badge bg-${r.skor >= 70 ? 'success' : 'warning'}">${r.status}</span></td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function renderDashboardGuru() {
+            const records = JSON.parse(localStorage.getItem('pancasila_scores') || '[]');
+            const tbody = document.getElementById('tblBodyGuru');
+            tbody.innerHTML = "";
+
+            if(records.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" class="text-center text-muted">Belum ada data nilai siswa tersimpan.</td></tr>`;
+                document.getElementById('guruStatTotalSiswa').innerText = "0";
+                document.getElementById('guruStatAvgKuis').innerText = "0";
+                document.getElementById('guruStatPassRate').innerText = "0%";
+                return;
+            }
+
+            const kuisRecords = records.filter(r => r.aktivitas === "Kuis Evaluasi Akhir");
+            const totalKuisScore = kuisRecords.reduce((acc, curr) => acc + curr.skor, 0);
+            const avgKuis = kuisRecords.length > 0 ? Math.round(totalKuisScore / kuisRecords.length) : 0;
+            const lulusCount = kuisRecords.filter(r => r.skor >= 70).length;
+            const passRate = kuisRecords.length > 0 ? Math.round((lulusCount / kuisRecords.length) * 100) : 0;
+
+            const uniqueSiswa = [...new Set(records.map(r => r.nama))];
+
+            document.getElementById('guruStatTotalSiswa').innerText = uniqueSiswa.length;
+            document.getElementById('guruStatAvgKuis').innerText = avgKuis;
+            document.getElementById('guruStatPassRate').innerText = `${passRate}%`;
+
+            records.forEach(r => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td><strong>${r.nama}</strong></td>
+                    <td>${r.kelas}</td>
+                    <td>${r.aktivitas.includes('Kuis') ? r.skor : '-'}</td>
+                    <td>${r.aktivitas.includes('Game') ? r.skor : '-'}</td>
+                    <td>${r.tanggal}</td>
+                    <td><span class="badge bg-${r.skor >= 70 ? 'success' : 'danger'}">${r.status}</span></td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function clearAllDataGuru() {
+            if(confirm("Apakah Anda yakin ingin menghapus seluruh rekap nilai siswa? Data tidak dapat dikembalikan.")) {
+                localStorage.removeItem('pancasila_scores');
+                renderDashboardGuru();
+            }
+        }
+    </script>
+</body>
+</html>
